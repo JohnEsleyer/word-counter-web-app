@@ -1,5 +1,6 @@
 // UserInputForm.tsx
 import React, { useState } from 'react';
+import Loading from '../assets/loading.svg'
 
 interface UserInputFormProps {
   onButtonClick: (url: string, word: string) => void;
@@ -10,8 +11,10 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onButtonClick }) => {
   const [word, setWord] = useState<string>('');
   const [isUrlValid, setIsUrlValid] = useState<boolean>(true);
   const [isWordValid, setIsWordValid] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const handleButtonClick = () => {
+  const handleButtonClick = async () => {
     // Validate the URL before triggering the callback
     const urlPattern = new RegExp('^(https?://)?[a-zA-Z0-9-]+(\\.[a-zA-Z]{2,})+(\\/[^\\s]*)?$');
     if (!urlPattern.test(url)) {
@@ -25,8 +28,23 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onButtonClick }) => {
       return;
     }
 
-    // Trigger the callback with user input
-    onButtonClick(url, word);
+    // Reset previous states
+    setIsLoading(true);
+    setIsUrlValid(true);
+    setIsWordValid(true);
+    setErrorMessage('');
+
+    try {
+      // Trigger the callback with user input
+      await onButtonClick(url, word);
+    } catch (error) {
+      // Handle server errors
+      setErrorMessage('Server error');
+      console.error('Server Error:', error);
+    } finally {
+      // Stop loading whether there was an error or not
+      setIsLoading(false);
+    }
   };
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,10 +91,16 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onButtonClick }) => {
 
       <button
         onClick={handleButtonClick}
-        className="bg-gray-800 text-white p-2 rounded-md"
+        className={isLoading ? "invisible" : "bg-gray-800 text-white p-2 rounded-md relative"}
+        disabled={isLoading}
       >
-        Count Occurrences
+      Count Occurrences
       </button>
+      <img src={Loading} alt="Loading" width="50" height="50" className={isLoading ? "visible" : "invisible" }/>
+
+      {errorMessage && (
+        <p className="text-red-500 mt-2">{errorMessage}</p>
+      )}
     </div>
   );
 };
