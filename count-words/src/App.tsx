@@ -6,16 +6,22 @@ const App: React.FC = () => {
   const [occurrences, setOccurrences] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isUrlValid, setIsUrlValid] = useState<boolean>(true);
+  const [isWordValid, setIsWordValid] = useState<boolean>(true);
 
   const handleButtonClick = async () => {
     try {
       setErrorMessage('');
-      
+
       // Validate the URL before making the request
       const urlPattern = new RegExp('^(https?://)?[a-zA-Z0-9-]+(\\.[a-zA-Z]{2,})+(\\/[^\\s]*)?$');
       if (!urlPattern.test(url)) {
-        setErrorMessage('Please fix the error above');
         setIsUrlValid(false);
+        return;
+      }
+
+      // Check if the word is empty
+      if (word.trim() === '') {
+        setIsWordValid(false);
         return;
       }
 
@@ -48,6 +54,12 @@ const App: React.FC = () => {
     setIsUrlValid(true);
   };
 
+  const handleWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setWord(e.target.value);
+    setErrorMessage('');
+    setIsWordValid(true);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="max-w-md p-6 bg-gray-100 rounded-lg shadow-md">
@@ -71,9 +83,10 @@ const App: React.FC = () => {
             type="text"
             id="word"
             value={word}
-            onChange={(e) => setWord(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            onChange={handleWordChange}
+            className={`w-full p-2 border ${isWordValid ? 'border-gray-300' : 'border-red-500'} rounded-md`}
           />
+          {!isWordValid && <p className="text-red-500 mt-1">Please provide a word</p>}
         </div>
 
         <button
