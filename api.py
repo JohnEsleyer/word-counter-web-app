@@ -1,27 +1,35 @@
+from flask import Flask, request, jsonify
 import requests
 from bs4 import BeautifulSoup
 
+app = Flask(__name__)
+
 def count_word_occurrences(url, target_word):
     response = requests.get(url)
-
     if response.status_code == 200:
-        
         soup = BeautifulSoup(response.text, 'html.parser')
         text_content = soup.get_text()
         word_count = text_content.lower().split().count(target_word.lower())
-
         return word_count
     else:
-        print(f"Failed to retrieve content from {url}. Status code: {response.status_code}")
         return 0
 
-def main():
- 
-    target_word = input("Enter the word to count occurrences: ")
-    url = input("Enter the URL to scrape: ")
-    word_occurrences = count_word_occurrences(url, target_word)
-    
-    print(f"The word '{target_word}' occurs {word_occurrences} times on the page at {url}.")
+@app.route('/api', methods=['POST'])
+def api_count_word_occurrences():
+    try:
+        data = request.get_json()
+
+        if 'word' not in data or 'url' not in data:
+            return jsonify({"error": "Both 'word' and 'url' must be provided in the JSON body."}), 400
+
+        target_word = data['word']
+        url = data['url']
+
+        word_occurrences = count_word_occurrences(url, target_word)
+
+        return jsonify({"word": target_word, "url": url, "occurrences": word_occurrences})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
