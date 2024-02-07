@@ -1,14 +1,24 @@
-
-
 import React, { useState } from 'react';
 
 const App: React.FC = () => {
   const [url, setUrl] = useState<string>('');
   const [word, setWord] = useState<string>('');
   const [occurrences, setOccurrences] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isUrlValid, setIsUrlValid] = useState<boolean>(true);
 
   const handleButtonClick = async () => {
     try {
+      setErrorMessage('');
+      
+      // Validate the URL before making the request
+      const urlPattern = new RegExp('^(https?://)?[a-zA-Z0-9-]+(\\.[a-zA-Z]{2,})+(\\/[^\\s]*)?$');
+      if (!urlPattern.test(url)) {
+        setErrorMessage('Please fix the error above');
+        setIsUrlValid(false);
+        return;
+      }
+
       const response = await fetch('http://127.0.0.1:5000/api', {
         method: 'POST',
         headers: {
@@ -20,12 +30,22 @@ const App: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setOccurrences(data.occurrences);
+      } else if (response.status === 400) {
+        setErrorMessage('Invalid input');
       } else {
+        setErrorMessage('Internal server error');
         console.error(`Failed to fetch. Status code: ${response.status}`);
       }
     } catch (error) {
+      setErrorMessage('Network error');
       console.error('Error:', error);
     }
+  };
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUrl(e.target.value);
+    setErrorMessage('');
+    setIsUrlValid(true);
   };
 
   return (
@@ -39,9 +59,10 @@ const App: React.FC = () => {
             type="text"
             id="url"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            onChange={handleUrlChange}
+            className={`w-full p-2 border ${isUrlValid ? 'border-gray-300' : 'border-red-500'} rounded-md`}
           />
+          {!isUrlValid && <p className="text-red-500 mt-1">Invalid URL</p>}
         </div>
 
         <div className="mb-4">
@@ -62,7 +83,10 @@ const App: React.FC = () => {
           Count Occurrences
         </button>
 
-        {occurrences !== null && (
+        {errorMessage && (
+          <p className="text-red-500 mt-2">{errorMessage}</p>
+        )}
+        {occurrences !== null && !errorMessage && (
           <p className="mt-4">Occurrences of the word: {occurrences}</p>
         )}
       </div>
