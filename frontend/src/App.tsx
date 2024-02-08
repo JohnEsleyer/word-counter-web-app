@@ -43,8 +43,10 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-       <h1 className="text-2xl font-semibold mb-4 pr-20">Word Occurrence Counter</h1>
+    <>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <h1 className="text-2xl font-semibold mb-4">Word Occurrence Counter</h1>
+    
       <div className="max-w-md p-6 bg-gray-100 rounded-lg shadow-md">
         {showResponse ? (
           <ResponseDisplay occurrences={occurrences} errorMessage={errorMessage} onReset={handleReset} />
@@ -53,6 +55,9 @@ const App: React.FC = () => {
         )}
       </div>
     </div>
+  </>
+  
+
   );
 };
 

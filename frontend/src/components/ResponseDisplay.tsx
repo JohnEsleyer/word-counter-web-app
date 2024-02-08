@@ -13,7 +13,7 @@ const ResponseDisplay: React.FC<ResponseDisplayProps> = ({ occurrences, errorMes
      
       {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
       {occurrences !== null && !errorMessage && (
-        <h1 className="text-2xl font-bold">{occurrences} occurrences</h1>
+        <h1 className="text-2xl font-bold">{occurrences} occurrences </h1>
       )}
       <button
       
